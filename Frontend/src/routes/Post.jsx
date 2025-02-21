@@ -2,8 +2,10 @@ import React, { useState } from 'react'
 import pic from "/zuck-avatar.png";
 import { GoCheckCircleFill } from "react-icons/go";
 import { BsThreeDots } from "react-icons/bs";
-import Action from '../compoenets/Action';
-import Comment from '../compoenets/Comment';
+import Action from '../components/Action';
+import Comment from '../components/Comment';
+
+// bcryptjs cookie-parser dotenv http-status-codes jsonwebtoken mongoose multer nodemailer uuid helmet express-rate-limit express-mongo-sanitize
 
 function Post() {
   const[like, setLike] = useState(false);
