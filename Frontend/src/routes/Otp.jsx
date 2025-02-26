@@ -1,8 +1,8 @@
 import React, { useActionState, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-// import { toast } from 'react-toastify';
-// import logo from '/logo.png';
-// import { useApi } from '../helper/useApi';
+import { resendOtp, verifyOtp } from '../redux/slices/authSlice';
+import { BiLoaderCircle } from 'react-icons/bi';
 
 export const getData = (data) => {
   console.log(data);
@@ -11,18 +11,19 @@ export const getData = (data) => {
  
 const Otp = () => {
   const navigate = useNavigate()
-  // let token = JSON.parse(localStorage.getItem("token"));
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
   const [otpNum, setOtpNum] = useState(["", "", "", "", "", ""]);
   const[disable, setDisable] = useState(false);
 
-  const [user, submitAction, isPending] = useActionState(async (previousState, formData) => {
+  const [_, submitAction, isPending] = useActionState(async (previousState, formData) => {
     const otp = otpNum.join('');
-    
-    // const data = await useApi("post", "auth/verify-email", {otp});
-    // if(data){
-    //   setOtpNum(["", "", "", "", "", ""]);
-    //   navigate("/");
-    // }
+    await dispatch(verifyOtp(otp)).then((result) => {
+      if (result.payload) {
+        setOtpNum(["", "", "", "", "", ""]);
+        navigate("/");
+      }
+    });
   });
 
   const handleChange = (e, index) => {
@@ -38,19 +39,13 @@ const Otp = () => {
     index == 5 && setDisable(true)
 };
 
-const handleNewOtp = async () => {
-  try {
-    // console.log(response?.data?.data?.email);
-    // console.log(getData({ email: response?.data?.data?.email, _id: response?.data?.data?._id }));
-    const result = getData({ email: response?.data?.data?.email, _id: response?.data?.data?._id });    
-    // console.log(result, "data");
-    const { email, _id } = result;
-    const payload = {email, _id};
-    const data = await useApi("post", "/auth/resend-otp", payload);
-  } catch (error) {
-    // toast.error(error.response?.data.message)
+const handleNewOtp = async() => {
+  if (user) {
+    await dispatch(resendOtp({ email: user.email, _id: user._id }));
+  } else {
+    console.log("User data not available");
   }
-}
+};
 
 const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && otpNum[index] === "") {
@@ -96,7 +91,7 @@ const handleKeyDown = (e, index) => {
             disabled={isPending}  
             className={`w-full inline-flex gap-2 items-center cursor-pointer justify-center whitespace-nowrap rounded-lg ${!disable ? 'bg-gray-300 hover:bg-gray-300 cursor-not-allowed' : 'bg-[#343434] hover:bg-[#343434df]'} px-3.5 py-2.5 text-sm font-medium text-white shadow-sm shadow-indigo-950/10 focus:outline-none focus:ring focus:ring-indigo-300 focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150`}>
                 <div className='text-[17px]'> Verify Otp</div>
-                { isPending && <div className="w-6 h-6 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div> } 
+                { isPending && <BiLoaderCircle className="size-7 animate-spin" /> } 
           </button>
         </div>
       </form>

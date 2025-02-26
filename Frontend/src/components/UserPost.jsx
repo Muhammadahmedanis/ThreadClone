@@ -8,15 +8,16 @@ import Action from './Action';
 
 function UserPost({likes, replies, postImage, postTitle}) {
   const[like, setLike] = useState(false);
+  const[isOpen, setIsOpen] = useState(false);
   return (
     <Link to="/markzuckerberg/post/1">
-        <div className='flex gap-2 mt-4 mb-10 py-2 px-5'>
+        <div className='w-[350px]  md:w-[640px] mt-3 py-2 px-4 shadow-md hover:shadow-xl hover:shadow-gray-300 transition-shadow duration-300'>
+            <div className='flex gap-2'>
             <div className='flex flex-col items-center'>
                 <img className='rounded-full h-10 md:h-12' src={pic} alt="" />
-                <div className='w-[1px] h-full bg-[#616161] my-3'></div>
+                <div className='w-[1px] h-full bg-[#616161] mt-3 mb-8'></div>
                 <div className='relative w-full'>
-                    <img className='rounded-full h-6 absolute top-0 left-3.5' src='/zuck-avatar.png' alt="" />
-                    <img className='rounded-full h-6 absolute bottom-0 -right-1' src={pic} alt="" />
+                    <img className='rounded-full h-6 absolute bottom-0 right-4' src={pic} alt="" />
                     <img className='rounded-full h-6 absolute bottom-0 -left-1' src={pic} alt="" />
                 </div>
             </div>
@@ -28,7 +29,27 @@ function UserPost({likes, replies, postImage, postTitle}) {
                     </div>
                     <div className='flex gap-2 items-center'>
                         <p className='dark:text-[#616161]'>1d</p>
-                        <BsThreeDots size={21}/>
+                        <div className="relative">
+                        <BsThreeDots size={22} className="text-black cursor-pointer hover:text-gray-700 transition" onClick={() => setIsOpen(!isOpen)} />
+                        {isOpen && (
+                            <div
+                            id="dropdown"
+                            className="absolute right-1 mt-2 z-20 w-36 bg-white shadow-lg rounded-lg border border-gray-200 transition-all"
+                            >
+                            <ul className="py-2">
+                                {["Copy Link", "Share", "Report"].map((item, index) => (
+                                <li
+                                    key={index}
+                                    className="px-4 py-3 cursor-pointer text-gray-700 font-semibold hover:bg-gray-100 rounded-lg transition"
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {item}
+                                </li>
+                                ))}
+                            </ul>
+                            </div>
+                        )}
+                        </div>
                     </div>
                 </div>
                 <p className='py-1'>{postTitle}</p>
@@ -47,6 +68,7 @@ function UserPost({likes, replies, postImage, postTitle}) {
                 </div>
             </div>
         </div>
+    </div>
     </Link>
   )
 }

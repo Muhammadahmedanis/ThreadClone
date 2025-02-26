@@ -9,8 +9,11 @@ import { FaRegEyeSlash } from "react-icons/fa6";
 import { IoEyeOutline } from "react-icons/io5";
 import { BiLoaderCircle } from "react-icons/bi";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { signinUser } from "../redux/slices/authSlice";
 
 function Signin() {
+  const dispatch = useDispatch();
   const [passIcon, setPassIcon] = useState("password");
   const handlePass = () => {
       setPassIcon(passIcon === "password" ? "text" : "password");
@@ -39,6 +42,8 @@ function Signin() {
   
       const payload = { email, password};
       console.log(payload);
+      await dispatch(signinUser(payload));
+      return null;
     })
   
 
@@ -84,10 +89,10 @@ function Signin() {
             <div className="text-right">
               <Link to="/forgot" className="text-[#343434] text-sm hover:text-[#343434df] cursor-pointer">Forgot Password?</Link>
             </div>
-            <button type="submit" className="w-full h-12 rounded-xl bg-[#343434] hover:bg-[#343434df] cursor-pointer text-white" disabled={isPending}>
+            <button type="submit" className="w-full h-12 rounded-xl flex justify-center items-center bg-[#343434] hover:bg-[#343434df] cursor-pointer text-white" disabled={isPending}>
               {isPending ? 
-                ( <> <BiLoaderCircle className="size-7 animate-spin" /> Loading... </> ) : 
-                ( "Create Account" ) 
+                ( <BiLoaderCircle className="size-7 animate-spin" /> ) : 
+                ( "Signin" ) 
               }
             </button>
             <div className="relative my-3 flex items-center">

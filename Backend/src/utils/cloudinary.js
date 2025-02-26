@@ -18,6 +18,7 @@ const uploadOnCloudinary = async (localFilePath) => {
 
         // Upload the file to Cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
+            folder: "thread_Clone",
             resource_type: "image" // Fix: Correct "img" to "image"
         });
 

@@ -4,7 +4,7 @@ import { BsThreeDots } from "react-icons/bs";
 import pic from "/zuck-avatar.png";
 import Action from './Action';
 
-function Comment({comment, createdAt, userName, likes}) {
+function Comment({comment, createdAt, userName, likes='', icon}) {
     const[like, setLike] = useState(false);
   return (
     <>
@@ -19,11 +19,11 @@ function Comment({comment, createdAt, userName, likes}) {
                 </div>
             </div>
             <p>{comment}</p>
-            <Action like={like} setLike={setLike} />
-            <p className='dark:text-[#616161]'>{likes + (like ? 1 : 0) } likes</p>
+            {icon && <Action like={like} setLike={setLike} />}
+            {likes && <p className='dark:text-[#616161]'>{likes + (like ? 1 : 0) } likes</p>}
         </div>
       </div>
-      <hr className='my-4 border-[1.5px]'/>
+      <hr className='my-1 border-[1.5px] border-gray-300'/>
     </>
   )
 }

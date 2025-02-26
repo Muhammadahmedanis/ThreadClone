@@ -4,51 +4,42 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { responseMessages } from "../constant/responseMessages.js";
-import mongoose from "mongoose";
-const { GET_SUCCESS_MESSAGES, UNAUTHORIZED_REQUEST, EMPTY_URL_PARAMS, NO_PERMISSION , UPDATE_SUCCESS_MESSAGES, NO_USER, NOT_ALLOWED} = responseMessages
-
-
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+const { GET_SUCCESS_MESSAGES, UNAUTHORIZED_REQUEST, EMPTY_URL_PARAMS, NO_PERMISSION , UPDATE_SUCCESS_MESSAGES, IMAGE_FAIL, NO_USER, NOT_ALLOWED} = responseMessages
+import {v2 as cloudinary} from "cloudinary"
 
 // @desc   FOLLLOW-UNFOLLOW-USER
 // @route   POST api/v1/user/follow/:id
 // @access  Private
-
 export const followUnfollowUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const userId = req.user?._id;
+
     if (!id || !userId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, EMPTY_URL_PARAMS);
-    };
+    }
     if (id === userId.toString()) {
         throw new ApiError(StatusCodes.BAD_REQUEST, NOT_ALLOWED);
-    };
+    }
 
-    // 🟢 Start a new MongoDB session
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    const userToModify = await User.findById(id).session(session);
-    const currentUser = await User.findById(userId).session(session);
-    if (!userToModify || !currentUser) {
+    const isUserExist = await User.findById(id);
+    if (!isUserExist) {
         throw new ApiError(StatusCodes.NOT_FOUND, NO_USER);
     }
 
-    const isFollowing = currentUser.following.includes(id);
-    if (isFollowing) {
-        // 🟢 Unfollow user
-        await User.findByIdAndUpdate(userId, { $pull: { following: id } }, { session });
-        await User.findByIdAndUpdate(id, { $pull: { followers: userId } }, { session });
-    } else {
-        // 🟢 Follow user
-        await User.findByIdAndUpdate(userId, { $addToSet: { following: id } }, { session });
-        await User.findByIdAndUpdate(id, { $addToSet: { followers: userId } }, { session });
-    }
+    const isFollowing = isUserExist.followers.includes(userId);
+    await User.findByIdAndUpdate(
+        id,
+        { [isFollowing ? "$pull" : "$addToSet"]: { followers: userId } },
+        { new: true }
+    );
 
-    // 🟢 Commit the transaction (apply changes)
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, isFollowing ? "User unfollowed successfully" : "User followed successfully"));
+    res.status(StatusCodes.OK).send(
+        new ApiResponse(
+            StatusCodes.OK,
+            isFollowing ? "User unfollowed successfully" : "User followed successfully"
+        )
+    );
 });
 
 
@@ -59,37 +50,33 @@ export const followUnfollowUser = asyncHandler(async (req, res) => {
 // @access  Private
 
 export const updateProfile = asyncHandler(async (req, res) => {
-    const { userName, email, password, profilePic, bio } = req.body;
-
-    const userId = req.user?._id;
-    const { id } = req.params;
-    if (!userId && !id) {
-        throw new ApiError(StatusCodes.BAD_REQUEST,EMPTY_URL_PARAMS);
-    };
-    if (id !== userId.toString()) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, NO_PERMISSION);
-    };
-
-
-    let user = await User.findById(userId).select("+password");
+    const { userName, email, bio } = req.body;
+    const user = req.user;
     if (!user) {
         throw new ApiError(StatusCodes.NOT_FOUND, NO_USER);
     }
 
-    if (userName) user.userName = userName;
-    if (email) user.email = email;
-    if (bio) user.bio = bio;
-    if (profilePic) user.profilePic = profilePic;
-    if (password) {
-        user.password = password;
+    let profilePic = user.profilePic;
+    if (req.file) {
+        if (profilePic) {
+            await cloudinary.uploader.destroy(profilePic.split("/").pop().split(".")[0]);
+        }
+
+        const uploadedImage = await uploadOnCloudinary(req.file.path);
+        if (!uploadedImage) {
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, IMAGE_FAIL);
+        }
+        profilePic = uploadedImage.secure_url;
     }
 
-    await user.save();
+    user.userName = userName || user.userName;
+    user.email = email || user.email;
+    user.bio = bio || user.bio;
+    user.profilePic = profilePic;
 
-    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, UPDATE_SUCCESS_MESSAGES, user));
+    await user.save(); 
+    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, UPDATE_SUCCESS_MESSAGES));
 });
-
-
 
 
 // @desc    PROFILE
@@ -97,13 +84,57 @@ export const updateProfile = asyncHandler(async (req, res) => {
 // @access  Prublic
 
 export const getUserProile = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    if (!id) {
+    // const user1 = await User.findById(req?.user._id);  // route name  myInfo
+    const { userName } = req.params;
+    if (!userName) {
         throw new ApiError(StatusCodes.BAD_REQUEST,EMPTY_URL_PARAMS);
     };
-    const user = await User.findOne({_id:id} ).lean().select("-password -refreshToken -isVerified -updatedAt");
+    const user = await User.findOne({userName} ).lean().select("-password -refreshToken -isVerified -updatedAt");
     if(!user){
         throw new ApiError(StatusCodes.NOT_FOUND, NO_USER);
     };
     return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, GET_SUCCESS_MESSAGES, user));
+})
+
+
+
+
+export const getUserDetail = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+        throw new ApiError(StatusCodes.BAD_REQUEST,EMPTY_URL_PARAMS);
+    };
+    const user = await User.findById(id)
+    .select("-password")
+    .populate("followers")
+    .populate("replies")
+    .populate({path: "threads", populate: [{ path: "likes"}, { path: "comments"}, { path: "postedBy" }]})
+    .populate({ path: "replies", populate: { path: "comentBy"}})
+    .populate({path: "reposts", populate: [{ path: "likes"}, { path: "comments"}, { path: "postedBy" }]})
+    if(!user){
+        throw new ApiError(StatusCodes.NOT_FOUND, NO_USER);
+    };
+    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, GET_SUCCESS_MESSAGES, user));
+})
+
+
+
+
+// @desc    SEARCH
+// @route   GET api/v1/user/search/:query
+// @access  Prublic
+
+export const SearchUser = asyncHandler(async (req, res) => {
+    const { query } = req.params;
+    if (!query) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Search query is required");
+    };
+    
+    const users = await User.find({
+        $or: [
+            {userName: { $regex: query, $options: 'i' }},
+            {email: { $regex: query, $options: 'i' }},
+        ]
+    });
+    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, users));
 })

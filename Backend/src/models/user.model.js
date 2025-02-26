@@ -44,13 +44,20 @@ const userSchema = new mongoose.Schema({
         type: String,
     },
     followers: {
-        type: [String],
-        default: [],
+        type: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}],
     },
-    following: {
-        type: [String],
-        default: [],
+    threads: {
+        type: [{type: mongoose.Schema.Types.ObjectId, ref: "Post"}],
     },
+    replies: {
+        type: [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}],
+    },
+    reposts: {
+        type: [{type: mongoose.Schema.Types.ObjectId, ref: "Post"}],
+    },
+    // following: {
+    //     type: [String],
+    // },
     bio: {
         type: String,
         default: "",

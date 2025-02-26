@@ -13,30 +13,37 @@ const postSchema = new mongoose.Schema({
     img: {
         type: String,
     },
-    likes: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: "User",
-        default: [],
-    },
-    replies: [
+    likes: [
         {
-            userId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-                required: true,
-            },
-            text: {
-                type: String,
-                required: true,
-            },
-            userProfilePic: {
-                type: String,
-            },
-            userName:{
-                type: String,
-            }
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: "User",
         }
-    ]
+    ],
+    comments: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Comment",
+        }
+    ],
+    // replies: [
+    //     {
+    //         userId: {
+    //             type: mongoose.Schema.Types.ObjectId,
+    //             ref: "User",
+    //             required: true,
+    //         },
+    //         text: {
+    //             type: String,
+    //             required: true,
+    //         },
+    //         userProfilePic: {
+    //             type: String,
+    //         },
+    //         userName:{
+    //             type: String,
+    //         }
+    //     }
+    // ]
 
 }, {timestamps: true})
 

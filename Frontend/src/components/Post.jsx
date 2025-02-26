@@ -3,16 +3,14 @@ import pic from "/zuck-avatar.png";
 import { GoCheckCircleFill } from "react-icons/go";
 import { BsThreeDots } from "react-icons/bs";
 import Action from '../components/Action';
-import Comment from '../components/Comment';
-
-// bcryptjs cookie-parser dotenv http-status-codes jsonwebtoken mongoose multer nodemailer uuid helmet express-rate-limit express-mongo-sanitize
 
 function Post() {
-  const[like, setLike] = useState(false);
+const[like, setLike] = useState(false);
+const[isOpen, setIsOpen] = useState(false)
+
   return (
-    <>
-      <div className='px-4'>
-        <div className='flex'>
+    <div>
+          <div className='flex'>
           <div className='flex w-full items-center gap-3'>
             <img className='rounded-full h-10 md:h-12' src={pic} alt="Mark Zukerburg" />
             <div className='flex items-center'>
@@ -22,7 +20,27 @@ function Post() {
           </div>
           <div className='flex gap-4 items-center'>
             <p className='dark:text-[#616161]'>1d</p>
-            <BsThreeDots size={21}/>
+            <div className="relative">
+            <BsThreeDots size={22} className="text-black cursor-pointer hover:text-gray-700 transition" onClick={() => setIsOpen(!isOpen)} />
+            {isOpen && (
+                <div
+                id="dropdown"
+                className="absolute right-1 mt-2 z-20 w-36 bg-white shadow-lg rounded-lg border border-gray-200 transition-all"
+                >
+                <ul className="py-2">
+                    {["Copy Link", "Share", "Report"].map((item, index) => (
+                    <li
+                        key={index}
+                        className="px-4 py-3 cursor-pointer text-gray-700 font-semibold hover:bg-gray-100 rounded-lg transition"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        {item}
+                    </li>
+                    ))}
+                </ul>
+                </div>
+            )}
+            </div>
           </div>
         </div>
         <p className='my-2'>This is my Post</p>
@@ -37,21 +55,7 @@ function Post() {
           <span>•</span>
           <p className='dark:text-[#616161]'>321 likes</p>
         </div>
-
-        <hr className='my-4 border-[1.5px]'/>
-        <div className='flex justify-between'>
-          <div className='flex gap-2 items-center'>
-            <p className='text-xl'>👋</p>
-            <p className='dark:text-[#616161]'>Get the app to like, reply and post.</p>
-          </div>
-          <button className='border rounded px-3 py-0.5 font-bold cursor-pointer'>Get</button>
-        </div>
-
-        <hr className='my-4 border-[1.5px]'/>
-        <Comment comment="Look's great!" createdAt="1d" userName="Ali" likes="1" />
-        <Comment comment="Amazing content and working" createdAt="2d" userName="Mark Zukerburg" likes="12" />
-      </div>
-    </>
+    </div>
   )
 }
 

@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import { LuMoveLeft } from "react-icons/lu";
-import { Link, useParams } from 'react-router-dom';
-// import { useApi } from '../helper/useApi';
+import { useNavigate, useParams } from 'react-router-dom';
 
 function NotFound() {
     const params = useParams();
+    const navigate = useNavigate();
     useEffect(() => {
         const notFound = async () => {
             // try {
@@ -28,11 +28,9 @@ function NotFound() {
         <h1 className="mt-3 text-2xl font-semibold text-gray-800 dark:text-white md:text-3xl">Page not found</h1>
         <p className="mt-4 text-gray-500 dark:text-gray-400">The page {params["*"]} doesn't exist</p>
         <div className="flex items-center w-full mt-6 gap-x-3 shrink-0 sm:w-auto">
-          <button className="flex items-center justify-center shadow-md w-1/2 border-none outline-none px-5 py-3 text-sm text-white transition-colors duration-200 bg-[#7f75dd] hover:bg-[#a09de8] border rounded-lg gap-x-2 sm:w-auto ">
+          <button onClick={() => navigate(-1)} className="flex items-center justify-center shadow-md w-1/2 border-none outline-none px-5 py-3 text-sm text-white transition-colors duration-200 bg-[#7f75dd] hover:bg-[#a09de8] border rounded-lg gap-x-2 sm:w-auto ">
           <LuMoveLeft size={20}/>
-          <Link to="/">
             <span>Go back</span>
-          </Link>
           </button>
         </div>
       </div>

@@ -62,13 +62,14 @@ export const signup = asyncHandler(async (req, res) => {
         sameSite: 'none', // Ensure it works with cross-site cookies
     };
 
+    const userResponse = newUser.toObject();
+    delete userResponse.password;
+
     return res
         .status(StatusCodes.CREATED)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .send(new ApiResponse(StatusCodes.OK, SUCCESS_REGISTRATION,
-        {user: newUser, accessToken, refreshToken},
-    ))
+        .send(new ApiResponse(StatusCodes.OK, SUCCESS_REGISTRATION, userResponse, accessToken, refreshToken ))
 });
 
 
@@ -198,7 +199,7 @@ export const signin = asyncHandler(async (req, res) => {
       
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
     
-    const loggedInusers = await  User.findById(user._id).select("-password, -refreshToken");
+    const loggedInusers = await  User.findById(user._id).select("-password -refreshToken");
     
     const options = {
         httpOnly: true, // Cookie can't be accessed via JavaScript
@@ -209,10 +210,7 @@ export const signin = asyncHandler(async (req, res) => {
     .status(StatusCodes.OK)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .send(new ApiResponse(StatusCodes.OK, 
-        SUCCESS_LOGIN,
-        {user: loggedInusers, accessToken, SUCCESS_LOGIN },
-    ))
+    .send(new ApiResponse(StatusCodes.OK,  SUCCESS_LOGIN, loggedInusers, accessToken ))
 })
 
 
@@ -269,6 +267,7 @@ export const logout = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         secure: true,
+        sameSite: 'none',
     }
 
     res
