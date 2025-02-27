@@ -9,17 +9,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { followUnfollowUser } from '../redux/slices/userSlice';
 import CreatePost from '../routes/CreatePost';
 import UpdateProfile from '../routes/UpdateProfile';
+import { openEditModel } from '../redux/slices/modelSlice';
 
 function ProfileLayout({user}) {
     // const loginUser = useSelector(state => state.auth);
     // const[following, setFollowing] = useState(user?.data.followers?.includes(loginUser?.user?.id));
     // const [followers, setFollowers] = useState(user?.data?.followers || []);
     const [isOpen, setIsOpen] = useState(false);
-    // const dispatch = useDispatch();
-
-    const handleModel = () => {
-        setIsOpen(!isOpen);
-    }
+    const dispatch = useDispatch();
 
     const copyUrl = () => {
         const currentUrl = window.location.href;
@@ -101,7 +98,7 @@ function ProfileLayout({user}) {
             </div>
         </div>
     </div>
-    <button onClick={handleModel} className="cursor-pointer rounded-lg w-full text-center my-2 px-5 py-2.5 text-[15px] font-bold border border-gray-300"> Edit Profile </button>
+    <button onClick={() => dispatch(openEditModel(true))} className="cursor-pointer rounded-lg w-full text-center my-2 px-5 py-2.5 text-[15px] font-bold border border-gray-300"> Edit Profile </button>
     
     <div className='flex w-full my-3'>
         <div className='flex-1 pb-1 cursor-pointer border-b-3 border-gray-600'>
@@ -115,7 +112,7 @@ function ProfileLayout({user}) {
         </div>
     </div>
     <CreatePost />
-    <UpdateProfile isOpen={isOpen} setIsOpen={setIsOpen}/>
+    <UpdateProfile />
     <Outlet />
     </div>
   )

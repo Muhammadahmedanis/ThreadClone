@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../api/axios";
 import toast from "react-hot-toast";
 
+
 export const signupUser = createAsyncThunk("auth/signup", async (userData, { rejectWithValue }) => {
     try {
         const response = await axiosInstance.post(`auth/signup`, userData);

@@ -3,13 +3,15 @@ import Label from '../components/Label';
 import Input from '../components/Input';
 import { BiLoaderCircle } from 'react-icons/bi';
 import { IoClose } from 'react-icons/io5';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateUserProfile } from '../redux/slices/authSlice';
 import usePreviewImage from '../hooks/usePreviewImage';
+import { openEditModel } from '../redux/slices/modelSlice';
 
-function UpdateProfile({isOpen, setIsOpen}) {
+function UpdateProfile() {
   const dispatch = useDispatch();
   const { handleImageChange, imgUrl } = usePreviewImage();
+  const { editModel } = useSelector(state => state.model);
 
   const userInfo = JSON.parse(localStorage.getItem('user'));
 
@@ -28,13 +30,13 @@ function UpdateProfile({isOpen, setIsOpen}) {
 
   return (
     <>
-      {isOpen && (
+      {editModel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b pb-2">
               <h2 className="text-xl font-semibold">Update Profile</h2>
-              <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-700 cursor-pointer">
+              <button onClick={() => dispatch(openEditModel(false))} className="text-gray-500 hover:text-gray-700 cursor-pointer">
                 <IoClose size={24} />
               </button>
             </div>

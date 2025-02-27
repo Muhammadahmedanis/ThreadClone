@@ -9,7 +9,7 @@ import { responseMessages } from "../constant/responseMessages.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/Comment.model.js";
 import {v2 as cloudinary} from "cloudinary"
-
+import mongoose from "mongoose";
 const { MISSING_FIELDS, USER_EXISTS, CREATE_SUCCESS_MESSAGES, NO_USER,  UNAUTHORIZED_REQUEST, GET_SUCCESS_MESSAGES, RESET_LINK_SUCCESS,  NOT_VERIFY, EMPTY_URL_PARAMS, UPDATE_UNSUCCESS_MESSAGES, DELETED_SUCCESS_MESSAGES, ADD_SUCCESS_MESSAGES, NO_DATA_FOUND, IMAGE_SUCCESS, IMAGE_ERROR, IMAGE_FAIL, UPDATE_SUCCESS_MESSAGES, UNAUTHORIZED} = responseMessages
 
 
@@ -66,14 +66,17 @@ export const createPost = asyncHandler(async (req, res) => {
 // @desc    GETPOST
 // @route   GET /api/v1/post/:postId
 // @access  Private
-
+// *
 export const getPost = asyncHandler(async (req, res) => {
     const { postId } = req.params;
     if (!postId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, EMPTY_URL_PARAMS);
     };
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId)
+    .populate({ path: "postedBy", select: "-password"})
+    .populate({ path: "likes",select: "-password"})
+    .populate({ path: "comments", populate: { path: "CommentBy"}})
     if (!post) {
         throw new ApiError(StatusCodes.NOT_FOUND, NO_DATA_FOUND);
     }
@@ -94,8 +97,8 @@ export const getAllPost = asyncHandler(async (req, res) => {
         pageNumber = 1;
     };
     const posts = await Post.find({}).sort({createdAt: -1}).skip((pageNumber-1)*3).limit(3)
-    .populate("postedBy")
-    .populate("likes")
+    .populate({ path: "postedBy", select: '-password'})
+    .populate({ path: "likes", select: '-password'})
     .populate({ 
         path: "comments", 
         populate: { path: "commentBy", model: "User"}, 
@@ -109,8 +112,13 @@ export const getAllPost = asyncHandler(async (req, res) => {
 // @desc    DELETEPOST
 // @route   GET /api/v1/post/:postId
 // @access  Private
-
+// *
 export const deletePost = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    if (!userId) {
+        throw new ApiError(StatusCodes.UNAUTHORIZED, UNAUTHORIZED);
+    }
+
     const { postId } = req.params;
     if (!postId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, EMPTY_URL_PARAMS);
@@ -120,13 +128,11 @@ export const deletePost = asyncHandler(async (req, res) => {
     if (!post) {
         throw new ApiError(StatusCodes.NOT_FOUND, NO_DATA_FOUND);
     }
-    
-    
-    if (post.postedBy.toString() !== postId.toString()) {
+
+    if (post.postedBy.toString() !== userId.toString()) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, UNAUTHORIZED);
     }
-    console.log('OK1');
-    
+
     if (post.img) { 
         const publicId = post.img.split("/").pop().split(".")[0]; 
         await cloudinary.uploader.destroy(publicId);
@@ -148,7 +154,7 @@ export const deletePost = asyncHandler(async (req, res) => {
 // @desc    LIKE&UNLIKEPOST
 // @route   GET /api/v1/likePost/:postId
 // @access  Private
-
+// *
 export const likeUnlikePost = asyncHandler(async (req, res) => {
     const userId = req.user._id; 
     if (!userId) {
@@ -182,8 +188,8 @@ export const likeUnlikePost = asyncHandler(async (req, res) => {
 // @desc    LIKE&UNLIKEPOST
 // @route   GET /api/v1/reply/:postId
 // @access  Public
-
-export const replyToPost = asyncHandler(async (req, res) => {
+// *
+export const repost = asyncHandler(async (req, res) => {
     const userId = req.user?._id; 
     if (!userId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, UNAUTHORIZED);
@@ -194,30 +200,45 @@ export const replyToPost = asyncHandler(async (req, res) => {
         throw new ApiError(StatusCodes.BAD_REQUEST, EMPTY_URL_PARAMS);
     };
     
-    const { text } = req.body;
-    const { error } = postSchema.validate({ text });
-    if (error) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, error.details[0].message);
-    };
 
     const post = await Post.findOne({ _id: postId });
     if (!post) {
         throw new ApiError(StatusCodes.NOT_FOUND, NO_DATA_FOUND);
     };
 
-    const reply = { userId, text, userProfilePic: req.user?.profilePic || null, userName: req.user?.userName || "Anonymous" };
-    await Post.findByIdAndUpdate(postId, 
+    const newId = new mongoose.Types.ObjectId(postId);
+    if (req.user.reposts.includes(newId)) {
+        return res.status(StatusCodes.BAD_REQUEST).send(new ApiError(StatusCodes.BAD_REQUEST, "post already repost"));
+    };
+
+    await User.findByIdAndUpdate(userId,
         {
-            $push: { 
-                replies: {
-                    userId,
-                    text,
-                    userProfilePic: req.user?.profilePic || null, 
-                    userName: req.user?.userName || "Anonymous",
-                }
-            } 
-        },  { new: true, runValidators: true } ); 
-    return res.status(StatusCodes.OK).send( new ApiResponse(StatusCodes.OK, ADD_SUCCESS_MESSAGES, { reply }));
+            $push: { reposts: post._id}
+        },
+        {new: true}
+    )
+    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, "Reposted successfully"));
+
+
+    // const { text } = req.body;
+    // const { error } = postSchema.validate({ text });
+    // if (error) {
+    //     throw new ApiError(StatusCodes.BAD_REQUEST, error.details[0].message);
+    // };
+
+    // const reply = { userId, text, userProfilePic: req.user?.profilePic || null, userName: req.user?.userName || "Anonymous" };
+    // await Post.findByIdAndUpdate(postId, 
+    //     {
+    //         $push: { 
+    //             replies: {
+    //                 userId,
+    //                 text,
+    //                 userProfilePic: req.user?.profilePic || null, 
+    //                 userName: req.user?.userName || "Anonymous",
+    //             }
+    //         } 
+    //     },  { new: true, runValidators: true } ); 
+    // return res.status(StatusCodes.OK).send( new ApiResponse(StatusCodes.OK, ADD_SUCCESS_MESSAGES, { reply }));
     
     // why run validotor: By default, Mongoose only applies validations when creating or saving a document, not when using findByIdAndUpdate or other findAndModify methods. Based on your Post Schema, it will validate fields inside the replies array when adding a new reply.
 })

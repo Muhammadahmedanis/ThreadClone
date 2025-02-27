@@ -7,6 +7,7 @@ import { StatusCodes } from "http-status-codes";
 import authRouter from "./routes/auth.routes.js";
 import postRouter from "./routes/post.routes.js";
 import userRouter from "./routes/user.routes.js";
+import commentRouter from "./routes/comment.routes.js";
 
 const app = express();
 
@@ -44,6 +45,8 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/post", postRouter);
+app.use("/api/v1/comment", commentRouter);
+
 
 
 // Handle Undefined Routes

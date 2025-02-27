@@ -20,9 +20,9 @@ import Thread from "./routes/Thread";
 import Replies from "./routes/Replies";
 import Repost from "./routes/Repost";
 import SinglePost from "./routes/SinglePost";
+import { useEffect } from "react";
 
 function App() {
-  const data = true;
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
@@ -32,29 +32,31 @@ function App() {
         <Route path="/reset" element={ <ResetPass /> } />
         <Route path="/update" element={ <UpdateProfile /> } />
         
-        { data  ? 
-        (  <Route path='/' element={ <Layout /> }>
+        {/* { data  ?  */}
+        {/* (   */}
+          <Route path='/' element={ <Layout /> }>
+        <Route path="/signin" element={ <Signin /> } />
             <Route index element={ <Home /> } />
             <Route path="/search" element={ <Search /> } />
-            {/* <Route path="/:userName" element={ <User /> } /> */}
+            <Route path="/:userName" element={ <User /> } />
             <Route path="/:userName/post/:pId" element={ <SinglePost /> } />
             <Route path="/profile" element={ <ProfileLayout />}>
               <Route path="thread/:id" element={ <Thread /> } />
               <Route path="replies/:id" element={ <Replies /> } />
               <Route path="repost/:id" element={ <Repost /> } />
             </Route>
-          </Route>): 
+          </Route>
+          {/* ): 
           (
-            <Route path="/signin" element={ <Signin /> } />
           )
-        }
+        } */}
 
         <Route path="*" element={ <NotFound /> } />
       </>
     )
   )
   return (
-    <div className="max-w-5xl mx-auto">
+    <div>
       <RouterProvider router={router} />
       <Toaster position="top-center" />
     </div>
