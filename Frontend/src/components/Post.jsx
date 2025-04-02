@@ -4,9 +4,10 @@ import { GoCheckCircleFill } from "react-icons/go";
 import { BsThreeDots } from "react-icons/bs";
 import Action from '../components/Action';
 
-function Post() {
+function Post({post}) {
 const[like, setLike] = useState(false);
 const[isOpen, setIsOpen] = useState(false)
+// console.log(post);
 
   return (
     <div>
@@ -45,7 +46,7 @@ const[isOpen, setIsOpen] = useState(false)
         </div>
         <p className='my-2'>This is my Post</p>
         <div className='rounded overflow-hidden border'>
-          <img className='md:h-96 w-full' src={pic} alt="" />
+          <img className='md:h-96 w-full' src={post?.img || pic} alt="" />
         </div>
         <div className='flex gap-1 my-1'>
           <Action like={like} setLike={setLike} />

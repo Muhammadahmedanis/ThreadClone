@@ -21,37 +21,37 @@ import Replies from "./routes/Replies";
 import Repost from "./routes/Repost";
 import SinglePost from "./routes/SinglePost";
 import { useEffect } from "react";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
+  const isExist = localStorage.getItem("user");
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        <Route path="/signup" element={ <Signup /> } />
-        <Route path="/otp" element={ <Otp /> } />
-        <Route path="/forgot" element={ <ForgotPass /> } />
-        <Route path="/reset" element={ <ResetPass /> } />
-        <Route path="/update" element={ <UpdateProfile /> } />
-        
-        {/* { data  ?  */}
-        {/* (   */}
-          <Route path='/' element={ <Layout /> }>
-        <Route path="/signin" element={ <Signin /> } />
-            <Route index element={ <Home /> } />
-            <Route path="/search" element={ <Search /> } />
-            <Route path="/:userName" element={ <User /> } />
-            <Route path="/:userName/post/:pId" element={ <SinglePost /> } />
-            <Route path="/profile" element={ <ProfileLayout />}>
-              <Route path="thread/:id" element={ <Thread /> } />
-              <Route path="replies/:id" element={ <Replies /> } />
-              <Route path="repost/:id" element={ <Repost /> } />
-            </Route>
-          </Route>
-          {/* ): 
-          (
-          )
-        } */}
+      <Route element={<ProtectedRoute user={!isExist} redirect='/' />} >
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/otp" element={<Otp />} />
+        <Route path="/forgot" element={<ForgotPass />} />
+        <Route path="/reset" element={<ResetPass />} />
+        <Route path="/update" element={<UpdateProfile />} />
+      </Route>
+      <Route path="/" element={<Layout />}>
+        <Route element={<ProtectedRoute user={isExist} />}>
+          <Route index element={<Home />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/:userName" element={<User />} />
+          <Route path="/:userName/post/:postId" element={<SinglePost />} />
 
-        <Route path="*" element={ <NotFound /> } />
+          <Route path="/profile" element={<ProfileLayout />}>
+            <Route path="thread/:id" element={<Thread />} />
+            <Route path="replies/:id" element={<Replies />} />
+            <Route path="repost/:id" element={<Repost />} />
+          </Route>
+        </Route>
+      </Route>
+
+      <Route path="*" element={<NotFound />} />
       </>
     )
   )

@@ -19,7 +19,8 @@ function Header() {
   const themeMode = useSelector(state => state.model.themeMode);
 
   const handleLogout = async () => {
-    await dispatch(logoutUser());
+    dispatch(logoutUser());
+    setIsOpen(false);
   };
 
   const handleTheme = () => {
@@ -49,7 +50,7 @@ function Header() {
                   {["Copy Link"].map((item, index) => (
                     <li
                       key={index}
-                      className="px-4 py-3 cursor-pointer text-gray-700 font-semibold hover:bg-gray-100 rounded-lg transition"
+                      className="px-4 py-3 cursor-pointer text-gray-700 font-semibold hover:bg-gray-100 rounded transition"
                       onClick={() => setIsOpen(false)}
                     >
                       {item}
@@ -58,7 +59,7 @@ function Header() {
                   <li>
                    {
                       user?.userName ? 
-                      (<button onClick={handleLogout} className="cursor-pointer inline-flex gap-1 items-center rounded-lg px-5 py-2.5 text-sm font-medium text-black">
+                      (<button onClick={handleLogout} className="cursor-pointer w-[142px] my-2 hover:bg-gray-100 inline-flex gap-1 items-center rounded px-4 py-2.5 text-sm font-medium text-black">
                         Log Out <RiLogoutCircleRLine className="font-bold w-6" size={19} />
                       </button>) : 
                       (<Link to="/signin">

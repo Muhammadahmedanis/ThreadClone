@@ -8,14 +8,15 @@ import { RxAvatar } from "react-icons/rx";
 import { useDispatch } from "react-redux";
 import { openPostModel } from "../redux/slices/modelSlice";
 
-const navItems = [
-  { path: "/", icon: GoHome, label: "Home" },
-  { path: "/search", icon: IoIosSearch, label: "Search" },
-  { path: "/favorites", icon: CiHeart, label: "Favorites" },
-  { path: "/profile/thread/1", icon: RxAvatar, label: "Profile" },
-];
 
 function Navbar() {
+  const userId = JSON.parse(localStorage.getItem("user")).id;
+  const navItems = [
+    { path: "/", icon: GoHome, label: "Home" },
+    { path: "/search", icon: IoIosSearch, label: "Search" },
+    { path: "/favorites", icon: CiHeart, label: "Favorites" },
+    { path: `/profile/thread/${userId}`, icon: RxAvatar, label: "Profile" },
+  ];
   const location = useLocation();
   const [user, setUser] = useState(null);
   const dispatch = useDispatch();

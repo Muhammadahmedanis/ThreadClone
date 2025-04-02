@@ -4,14 +4,18 @@ import { FaImages } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { BiLoaderCircle } from "react-icons/bi";
 import usePreviewImage from "../hooks/usePreviewImage";
-import { addPost } from "../redux/slices/postSlice";
 import { openPostModel } from "../redux/slices/modelSlice";
+import { usePostQuery } from "../redux/hooks/usePostQuery";
+import { useUserQuery } from "../redux/hooks/useUserQuery";
 
 function CreatePost() {
-  const [file, setFile] = useState(null);
+  const userId = JSON.parse(localStorage.getItem("user")).id;
+  const { myInfo } = useUserQuery();
+  
   const dispatch = useDispatch();
+  const { createPostMutation } = usePostQuery();
   const isOpen = useSelector(state => state.model.postModel);
-  const { handleImageChange, imgUrl } = usePreviewImage()
+  const { handleImageChange, imgUrl, setImageUrl } = usePreviewImage()
   const[_, submitAction, isPending] = useActionState(async (previousState, formData) => {
     const text = formData.get("text");
     const payload = {
@@ -19,10 +23,15 @@ function CreatePost() {
       img: imgUrl,
     };
     console.log(payload);
-    // await dispatch(addPost(payload));
-    setIsModelOpen(false);
+    return
+    createPostMutation.mutate(payload, {
+      onSuccess: () => {
+        dispatch(openPostModel(false));
+        setImageUrl('');
+      },
+    });
   })
-
+  
   return (
     <>
       {isOpen && (
@@ -41,12 +50,12 @@ function CreatePost() {
               <form action={submitAction} className="space-y-2">
                 <div className="flex gap-4 items-center pb-3">
                   <img
-                    src="/zuck-avatar.png"
+                   src={'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTr3jhpAFYpzxx39DRuXIYxNPXc0zI5F6IiMQ&s' || myInfo?.data?.profilePic}
                     alt="Profile"
-                    className="h-12 w-12 rounded-full"
+                    className="h-12 w-12 rounded-full p-1 border border-gray-300"
                   />
                   <div className="w-full">
-                    <p className="text-sm font-medium py-2">Mark Zuckerberg</p>
+                    <p className="text-sm font-medium py-2">{myInfo?.data?.userName}</p>
                     <textarea 
                       name="text"
                       placeholder="Start a thread..."
@@ -77,13 +86,13 @@ function CreatePost() {
                     onChange={handleImageChange}
                   />
                   <label htmlFor="file" className="mt-2 cursor-pointer text-blue-600 hover:underline">
-                    {file ? "Change Image" : "Choose an Image"}
+                    {imgUrl ? "Change Image" : "Choose an Image"}
                   </label>
                 </div>
 
                 {/* Submit Button */}
                 <button type="submit" className="w-full bg-blue-700 flex cursor-pointer justify-center text-white font-medium rounded-lg px-5 py-2.5 hover:bg-blue-800">
-                 { isPending ? ( <BiLoaderCircle className="size-7 animate-spin" /> ) : "Post Thread"}
+                 { createPostMutation?.isPending ? ( <BiLoaderCircle className="size-7 animate-spin" /> ) : "Post Thread"}
                 </button>
               </form>
             </div>

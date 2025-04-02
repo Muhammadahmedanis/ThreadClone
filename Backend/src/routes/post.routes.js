@@ -10,7 +10,7 @@ postRouter.route("/").get(getAllPost);
 postRouter.route("/feed").get(verifyJwt, getFeed);
 postRouter.route("/:postId").get(verifyJwt, getPost);
 postRouter.route("/:postId").delete(verifyJwt, deletePost);
-postRouter.route("/likePost/:postId").post(verifyJwt, likeUnlikePost);
-postRouter.route("/repost/:postId").post(verifyJwt, repost);
+postRouter.route("/likePost/:postId").put(verifyJwt, likeUnlikePost);
+postRouter.route("/repost/:postId").put(verifyJwt, repost);
 
 export default postRouter; 

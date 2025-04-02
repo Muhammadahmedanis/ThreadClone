@@ -1,13 +1,23 @@
-import React from 'react';
+import React, { use, useEffect, useState } from 'react';
 import UserPost from '../components/UserPost';
-
+import { usePostQuery } from '../redux/hooks/usePostQuery';
+import { format } from 'timeago.js'
 function Home() {
+  const[page, setPage] = useState(1);
+  const { posts } = usePostQuery(page);
+  // console.log(posts);
+  useEffect(() => {
+  }, [posts])
+
+  const handleMore = () => {
+
+  }
   return (
     <div className="flex flex-col items-center px-4 pt-12 max-w-2xl mx-auto bg-white dark:bg-gray-900 min-h-screen">
       {/* Input Section */}
       <div className="w-full bg-gray-100 dark:bg-gray-800 px-4 py-2 border-b border-gray-300 dark:border-gray-700 shadow-md rounded-lg">
         <div className="flex items-center gap-3">
-          <img className="rounded-full h-10 w-10" src="/zuck-avatar.png" alt="User Avatar" />
+          <img className="rounded-full h-10 w-10 p-0.5"src={posts?.postedBy?.profilePic || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTr3jhpAFYpzxx39DRuXIYxNPXc0zI5F6IiMQ&s'} alt="User Avatar" />
           <input 
             type="text" 
             placeholder="Start a thread..." 
@@ -19,16 +29,19 @@ function Home() {
         </div>
       </div>
 
-      {/* User Post */}
-      <UserPost 
-        likes={1200} 
-        replies={421} 
-        postImage="/zuck-avatar.png"  
-        postTitle="Let's talk about Threads"
-      />
+        {
+          posts?.length > 0 ?
+          posts?.map((post) => (
+            <UserPost 
+              post={post}
+              key={post._id}
+            />
+          )) : 
+          <p className='mt-10 font-bold text-3xl'>No Post Found</p>
+        }
 
       {/* Load More Button */}
-      <button type="button" className="text-gray-900 hover:text-white my-4 border border-gray-800 hover:bg-gray-900 cursor-pointer font-medium rounded-lg text-sm px-5 py-2 text-center dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+      <button onClick={handleMore} type="button" className="text-gray-900 hover:text-white my-4 border border-gray-800 hover:bg-gray-900 cursor-pointer font-medium rounded-lg text-sm px-5 py-2 text-center dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
         Load More
       </button>
     </div>

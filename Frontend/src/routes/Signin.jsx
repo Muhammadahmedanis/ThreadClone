@@ -2,7 +2,7 @@ import Input from "../components/Input";
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import logo from "/light-logo.svg"
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useActionState, useState } from "react";
 import Label from "../components/Label";
 import { FaRegEyeSlash } from "react-icons/fa6";
@@ -45,6 +45,7 @@ function Signin() {
       const payload = { email, password};
       console.log(payload);
       signinMutation.mutate(payload);
+      <Navigate to='/' />
       return null;
     })
   

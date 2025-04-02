@@ -24,6 +24,8 @@ export const createComment = asyncHandler(async (req, res) => {
     };
 
     const { text } = req.body;
+    console.log(text);
+    
     if (!text.trim()) {
         throw new ApiError(StatusCodes.BAD_REQUEST, MISSING_FIELDS);
     };
@@ -32,10 +34,10 @@ export const createComment = asyncHandler(async (req, res) => {
     if (!isPostExist) {
         throw new ApiError(StatusCodes.NOT_FOUND, NO_DATA_FOUND);
     };
-
+    console.log(userId);
     const comment = await new Comment({ text, commentBy: userId, post: isPostExist._id }).save();
     await Post.findByIdAndUpdate(id, {$push: {comments: comment._id} }, {new: true});
-    await User.findByIdAndUpdate(userId, {$push: {replies: comment._id} }, {new: true});
+    await User.findByIdAndUpdate({ _id: userId }, {$push: {replies: comment._id} }, {new: true});
     return res.status(StatusCodes.CREATED).send(new ApiResponse(StatusCodes.CREATED, CREATE_SUCCESS_MESSAGES, comment));
 })
 

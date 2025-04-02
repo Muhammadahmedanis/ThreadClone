@@ -7,6 +7,7 @@ import { responseMessages } from "../constant/responseMessages.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const { GET_SUCCESS_MESSAGES, UNAUTHORIZED_REQUEST, EMPTY_URL_PARAMS, NO_PERMISSION , UPDATE_SUCCESS_MESSAGES, IMAGE_FAIL, NO_USER, NOT_ALLOWED} = responseMessages
 import {v2 as cloudinary} from "cloudinary"
+import mongoose from "mongoose";
 
 // @desc   FOLLLOW-UNFOLLOW-USER
 // @route   POST api/v1/user/follow/:id
@@ -97,19 +98,24 @@ export const getUserProile = asyncHandler(async (req, res) => {
 })
 
 
-
-
 export const getUserDetail = asyncHandler(async (req, res) => {
     const { id } = req.params;
     if (!id) {
         throw new ApiError(StatusCodes.BAD_REQUEST,EMPTY_URL_PARAMS);
     };
     const user = await User.findById(id)
-    .select("-password")
+    .select("-password -updatedAt -role -isVerified -__v")
     .populate("followers")
     .populate("replies")
     .populate({path: "threads", populate: [{ path: "likes"}, { path: "comments"}, { path: "postedBy" }]})
-    .populate({ path: "replies", populate: { path: "comentBy"}})
+    .populate({path: "replies",  populate: [
+        { path: "commentBy", select: "userName profilePic" }, // Person who made the comment
+        { 
+            path: "post", 
+            select: "postedBy",
+            populate: { path: "postedBy", select: "userName profilePic" } // Owner of the post
+        }
+    ]})
     .populate({path: "reposts", populate: [{ path: "likes"}, { path: "comments"}, { path: "postedBy" }]})
     if(!user){
         throw new ApiError(StatusCodes.NOT_FOUND, NO_USER);
@@ -136,5 +142,5 @@ export const SearchUser = asyncHandler(async (req, res) => {
             {email: { $regex: query, $options: 'i' }},
         ]
     });
-    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, users));
+    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, '', users));
 })

@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import Label from '../components/Label';
 import Input from '../components/Input';
-import { BiLoaderCircle } from 'react-icons/bi';
 import { IoClose } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateUserProfile } from '../redux/slices/authSlice';
 import usePreviewImage from '../hooks/usePreviewImage';
 import { openEditModel } from '../redux/slices/modelSlice';
+import { useAuthQuery } from '../redux/hooks/useAuthQuery';
+import { useUserQuery } from '../redux/hooks/useUserQuery';
+import { useParams } from 'react-router-dom';
+import { BiLoaderCircle } from 'react-icons/bi';
 
 function UpdateProfile() {
   const dispatch = useDispatch();
   const { handleImageChange, imgUrl } = usePreviewImage();
   const { editModel } = useSelector(state => state.model);
-
   const userInfo = JSON.parse(localStorage.getItem('user'));
-
+  const { updateProfileMutation } = useAuthQuery();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -24,8 +26,11 @@ function UpdateProfile() {
       email: formData.get('email'),
       bio: formData.get('bio'),
     };
-    await dispatch(updateUserProfile(payload));
-    setIsOpen(false);
+    updateProfileMutation.mutate(payload, {
+      onSuccess: () => {
+        dispatch(openEditModel(false))
+      },
+    });
   };
 
   return (
@@ -81,15 +86,15 @@ function UpdateProfile() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+                  className="bg-gray-400 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-gray-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                  className="bg-blue-600 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center"
                 >
-                  Submit
+                 { updateProfileMutation?.isPending ? ( <BiLoaderCircle className="size-7 animate-spin" /> ) : "Submit"}
                 </button>
               </div>
             </form>

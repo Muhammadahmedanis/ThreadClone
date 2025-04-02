@@ -6,13 +6,9 @@ const usePreviewImage = () => {
         const file = e.target.files[0];
         if (file) {
             setImageUrl(file);
-            // const reader = new FileReader();
-            // reader.onloadend = () => {
-            // }
-            // reader.readAsDataURL(file);
         }
     }
-    return { imgUrl, handleImageChange }
+    return { imgUrl, handleImageChange, setImageUrl }
 }
 
 export default usePreviewImage;

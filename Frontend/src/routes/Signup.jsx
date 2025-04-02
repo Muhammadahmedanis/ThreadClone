@@ -9,11 +9,11 @@ import { FaRegEyeSlash } from "react-icons/fa6";
 import { IoEyeOutline } from "react-icons/io5";
 import { BiLoaderCircle } from "react-icons/bi";
 import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
-import { signupUser } from "../redux/slices/authSlice";
+// import { useDispatch } from "react-redux";
+// import { signupUser } from "../redux/slices/authSlice";
 
 function Signin() {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const [passIcon, setPassIcon] = useState("password");
   const navigate = useNavigate();
   const handlePass = () => {
@@ -49,7 +49,7 @@ function Signin() {
 
     const payload = { userName, email, password};
     console.log(payload);
-    await dispatch(signupUser(payload));
+    // await dispatch(signupUser(payload));
     navigate("/otp");
     return null;
   })

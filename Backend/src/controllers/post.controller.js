@@ -76,7 +76,7 @@ export const getPost = asyncHandler(async (req, res) => {
     const post = await Post.findById(postId)
     .populate({ path: "postedBy", select: "-password"})
     .populate({ path: "likes",select: "-password"})
-    .populate({ path: "comments", populate: { path: "CommentBy"}})
+    .populate({ path: "comments", populate: { path: "commentBy"}})
     if (!post) {
         throw new ApiError(StatusCodes.NOT_FOUND, NO_DATA_FOUND);
     }
@@ -101,7 +101,7 @@ export const getAllPost = asyncHandler(async (req, res) => {
     .populate({ path: "likes", select: '-password'})
     .populate({ 
         path: "comments", 
-        populate: { path: "commentBy", model: "User"}, 
+        populate: { path: "commentBy"}, 
     });
    
     res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, posts));

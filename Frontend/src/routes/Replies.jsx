@@ -1,12 +1,23 @@
 import React from 'react'
 import UserPost from '../components/UserPost'
 import Comment from '../components/Comment'
+import { useOutletContext } from 'react-router-dom';
+import { format } from 'timeago.js';
 
 function Replies() {
-    let icon = false
+  const myInfo = useOutletContext();
+  console.log(myInfo?.replies);
+  // console.log(myInfo);
+  
   return (
     <div className='flex flex-col gap-2'>
-        <Comment comment="Look's great!" createdAt="1d" userName="Ali" icon={icon}/>
+      {
+        myInfo?.replies?.map((msg) => {
+          return <Comment key={msg._id} commentId={msg._id} comment={msg.text} createdAt={format(msg?.createdAt)} id={msg?.commentBy?._id} userName={msg?.post?.postedBy?.userName} img={msg?.post?.postedBy?.profilePic} />
+          // return <Comment key={msg._id} postId={msg.post} commentId={msg._id} comment={msg.text} createdAt={ format(msg?.createdAt) } userName={msg?.commentBy?.userName} id={msg?.commentBy?._id} />
+        }
+      )
+    }
      </div>
   )
 }
