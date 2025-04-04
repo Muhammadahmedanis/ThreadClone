@@ -9,11 +9,11 @@ function Layout() {
   const location = useLocation();
   const themeMode = useSelector(state => state.model.themeMode);
   const user = JSON.parse(sessionStorage.getItem("user"))
-  const[me, setMe] = useState(null);
-  const { myInfo } = useUserQuery();
-  useEffect(() => {
-    setMe(myInfo?.data)
-  }, [myInfo?.data])
+  // const[me, setMe] = useState(null);
+  // const { myInfo } = useUserQuery();
+  // useEffect(() => {
+  //   setMe(myInfo?.data)
+  // }, [myInfo?.data])
   return (
     <>
        {!["/signin", "/signup", "/forgot"].includes(location.pathname) && <Header />}
@@ -26,7 +26,7 @@ function Layout() {
         </Helmet>
        <div className={` ${themeMode} dark:bg-gray-900`}>
         <div className={`${["/signin", "/signup", "/forgot"].includes(location.pathname) ? "w-full" : "max-w-5xl mx-auto"} `}>
-            <Outlet context={me} />
+            <Outlet />
         </div>
        </div>
     </>

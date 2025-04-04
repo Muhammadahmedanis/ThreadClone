@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { RiLogoutCircleRLine } from "react-icons/ri";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // import { MdOutlineDashboard, MdPublishedWithChanges } from "react-icons/md";
 // import { FaBars, FaRegUser, FaRegEdit } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -18,12 +18,13 @@ function Header() {
   const [isOpen, setIsOpen] = useState(false);
   // const { user } = useSelector((state) => state.auth);
   const themeMode = useSelector(state => state.model.themeMode);
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user"));
   const { logoutMutation } = useAuthQuery();
 
   const handleLogout = async () => {
     logoutMutation.mutate();
+    navigate('/signin');  
     setIsOpen(false);
   };
 

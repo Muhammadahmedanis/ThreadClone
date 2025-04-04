@@ -29,27 +29,30 @@ import { useEffect, useState } from "react";
 
 function App() {
   const isExist = sessionStorage.getItem("user");
-  const[me, setMe] = useState(null);
-  const { myInfo } = useUserQuery();
-  useEffect(() => {
-    setMe(myInfo?.data)
-  }, [myInfo?.data])
-  console.log(me);
-  
+  // const[me, setMe] = useState(false);
+  // const { myInfo } = useUserQuery();
+  // useEffect(() => {
+  //   if(myInfo?.data?.userName){
+  //     setMe(true)
+  //   }
+  // }, [myInfo?.data])
+  // console.log(me);
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-      <Route element={<ProtectedRoute user={!me} redirect='/' />} >
+      <Route element={<ProtectedRoute user={isExist}  />} >
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/forgot" element={<ForgotPass />} />
         <Route path="/reset" element={<ResetPass />} />
-        <Route path="/update" element={<UpdateProfile />} />
+      <Route path="/update" element={<UpdateProfile />} />
       </Route>
+
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
-        <Route element={<ProtectedRoute user={me} />}>
+        <Route element={<ProtectedRoute user={isExist}/>}>
           <Route path="/search" element={<Search />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/:userName/post/:postId" element={<SinglePost />} />
