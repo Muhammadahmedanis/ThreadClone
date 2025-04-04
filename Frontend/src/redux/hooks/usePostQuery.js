@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createPost, allPost, deletePost, likePost, getAPost, rePost, feedPost,  createComment, deleteComment } from "../services/postService.js"; 
+import { createPost, allPost, deletePost, likePost, getAPost, rePost, feedPost,  createComment, deleteComment, topLikePost } from "../services/postService.js"; 
 import toast from "react-hot-toast";
 
 export const usePostQuery = (page = 1, postId = null) => {
@@ -9,7 +9,8 @@ export const usePostQuery = (page = 1, postId = null) => {
         queryKey: ["posts", page],
         queryFn: () => allPost(page),
         enabled: !!page,
-        // staleTime: 10000, 
+        staleTime: 60000,
+        keepPreviousData: true, 
         refetchOnWindowFocus: false,
         onSuccess: (data) => console.log("Posts fetched:", data),
         onError: (error) => toast.error(error.response?.data?.message || "Failed to fetch posts"),
@@ -28,6 +29,16 @@ export const usePostQuery = (page = 1, postId = null) => {
     const post = posta?.data || [];
     
 
+    const { data: trendPost } = useQuery({
+        queryKey: ["trendPost"],
+        queryFn: topLikePost,
+        // enabled: !!postId, // Only fetch if postId exists
+        staleTime: 10000, 
+        refetchOnWindowFocus: false,
+        onSuccess: (data) => console.log("trend post fetched:", data),
+        onError: (error) => toast.error(error.response?.data?.message || "Failed to fetch trend post"),
+    });
+
     const createPostMutation = useMutation({
         mutationFn: createPost,
         onSuccess: (data) => {
@@ -40,11 +51,11 @@ export const usePostQuery = (page = 1, postId = null) => {
     const deletePostMutation = useMutation({
         mutationFn: deletePost,
         onSuccess: (_, postId) => {
+        //     queryClient.setQueryData(["posts", page], (currData) => 
+        //         currData ? currData.filter(post => post._id !== postId) : []
+        // );
+            queryClient.invalidateQueries(["posts", postId]);
             toast.success("Post deleted successfully!");
-            queryClient.setQueryData(["posts", page], (currData) => {
-                if (!currData) return [];
-                return currData.filter(post => post.id !== postId); // Remove deleted post from cache
-            });
         },
         onError: (error) => toast.error(error.response?.data?.message || "Delete post failed"),
     });
@@ -79,17 +90,19 @@ export const usePostQuery = (page = 1, postId = null) => {
     });
 
     const deleteCommentMutation = useMutation({
-        mutationFn: deleteComment, // ✅ Fix: Correct function
+        mutationFn: deleteComment,
         onSuccess: (_, { postId, commentId }) => {
-            // queryClient.setQueryData(["comments", postId], (currData) => {
-            //     if (!currData) return [];
-            //     return currData.filter(comment => comment.id !== commentId);
-            // });
+            // Instantly update cache to remove the deleted comment
+            // queryClient.setQueryData(["comments", postId], (currData) => 
+            //     currData ? currData.filter(comment => comment._id !== commentId) : []
+            // );
+            // (Optional) Refetch the comments to ensure fresh data
             queryClient.invalidateQueries(["comments", postId]);
             toast.success("Comment deleted successfully!");
         },
         onError: (error) => toast.error(error.response?.data?.message || "Delete comment failed"),
     });
+    
 
     return { 
         createPostMutation, 
@@ -99,6 +112,7 @@ export const usePostQuery = (page = 1, postId = null) => {
         likePostMutation, 
         rePostMutation, 
         createCommentMutation, 
-        deleteCommentMutation 
+        deleteCommentMutation,
+        trendPost,
     };
 };

@@ -14,7 +14,6 @@ function Replies() {
       {
         myInfo?.replies?.map((msg) => {
           return <Comment key={msg._id} commentId={msg._id} comment={msg.text} createdAt={format(msg?.createdAt)} id={msg?.commentBy?._id} userName={msg?.post?.postedBy?.userName} img={msg?.post?.postedBy?.profilePic} />
-          // return <Comment key={msg._id} postId={msg.post} commentId={msg._id} comment={msg.text} createdAt={ format(msg?.createdAt) } userName={msg?.commentBy?.userName} id={msg?.commentBy?._id} />
         }
       )
     }

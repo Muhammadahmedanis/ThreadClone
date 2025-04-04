@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { GoHome } from "react-icons/go";
 import { IoIosSearch } from "react-icons/io";
+import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { TbEdit } from "react-icons/tb";
 import { CiHeart } from "react-icons/ci";
 import { RxAvatar } from "react-icons/rx";
@@ -10,23 +11,24 @@ import { openPostModel } from "../redux/slices/modelSlice";
 
 
 function Navbar() {
-  const userId = JSON.parse(localStorage.getItem("user")).id;
+  const user = JSON.parse(sessionStorage.getItem("user"));
   const navItems = [
     { path: "/", icon: GoHome, label: "Home" },
     { path: "/search", icon: IoIosSearch, label: "Search" },
-    { path: "/favorites", icon: CiHeart, label: "Favorites" },
-    { path: `/profile/thread/${userId}`, icon: RxAvatar, label: "Profile" },
+    { path: "/trend", icon: CiHeart, label: "Favorites" },
+    { path: `/profile/thread/${user?.id}`, icon: RxAvatar, label: "Profile" },
+    { path: "/chat", icon: IoChatbubbleEllipsesOutline, label: "Chat"}
   ];
   const location = useLocation();
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  // useEffect(() => {
+  //   const storedUser = sessionStorage.getItem("user");
+  //   if (storedUser) {
+  //     setUser(JSON.parse(storedUser));
+  //   }
+  // }, []);
 
   return (
     <nav className="fixed top-147 md:top-1 w-full left-1/2 transform -translate-x-1/2 lg:w-[90%] max-w-md 

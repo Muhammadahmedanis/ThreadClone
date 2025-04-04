@@ -98,14 +98,19 @@ export const getUserProile = asyncHandler(async (req, res) => {
 })
 
 
-export const getUserDetail = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+export const myDetail = asyncHandler(async (req, res) => {
+    // const { id } = req.params;
+    const id = req.user._id;
     if (!id) {
         throw new ApiError(StatusCodes.BAD_REQUEST,EMPTY_URL_PARAMS);
     };
     const user = await User.findById(id)
     .select("-password -updatedAt -role -isVerified -__v")
-    .populate("followers")
+    .populate({
+        path: "followers",
+        select: "_id",
+        options: { lean: true } 
+    })
     .populate("replies")
     .populate({path: "threads", populate: [{ path: "likes"}, { path: "comments"}, { path: "postedBy" }]})
     .populate({path: "replies",  populate: [

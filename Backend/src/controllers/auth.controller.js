@@ -122,8 +122,6 @@ export const resendOtp = asyncHandler( async (req, res) => {
 // @access  Private
 
 export const verifyEmail = asyncHandler(async (req, res) => {
-        console.log(req.body);
-        
         const { otp } = req.body;
         
         // Validate the input

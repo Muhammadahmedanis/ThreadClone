@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import Post from '../components/Post';
 import Comment from '../components/Comment';
-import { useParams } from 'react-router-dom';
+import { useOutletContext, useParams } from 'react-router-dom';
 import { usePostQuery } from '../redux/hooks/usePostQuery';
 import { format } from 'timeago.js'
 // bcryptjs cookie-parser dotenv http-status-codes jsonwebtoken mongoose multer nodemailer uuid helmet express-rate-limit express-mongo-sanitize
 
 function SinglePost() {
-  const[comment, setComment] = useState('');
-  const { postId } = useParams();
-  const { post, createCommentMutation } = usePostQuery(1, postId);
-  
-  const handleComment = () => {
-    if (postId && comment) {
-      createCommentMutation.mutate({ text: comment, postId });
-      setComment('');
-    } 
-  }
+const[comment, setComment] = useState('');
+const { postId } = useParams();
+const { post, createCommentMutation } = usePostQuery(1, postId);
+const handleComment = () => {
+  if (postId && comment) {
+    createCommentMutation.mutate({ text: comment, postId });
+    setComment('');
+  } 
+}
 
   useEffect(() => {
     if (post) {

@@ -5,4 +5,5 @@ export const signinUser = (userData) => axiosInstance.post("/auth/signin", userD
 export const logoutUser = () => axiosInstance.post("/auth/logout").then(res => res.data);
 export const verifyOtp = (otp) => axiosInstance.post("/auth/verify-email", { otp }).then(res => res.data);
 export const resendOtp = (userData) => axiosInstance.post("/auth/resend-otp", userData).then(res => res.data);
+export const forgotPass = (userData) => axiosInstance.post("/auth/forgot-password", userData).then(res => res.data);
 export const updateUserProfile = (userData) => axiosInstance.put("/user/updateProfile", userData, { headers: { "Content-Type": "multipart/form-data" } }).then(res => res.data);

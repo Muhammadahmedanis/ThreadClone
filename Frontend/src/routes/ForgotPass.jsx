@@ -1,23 +1,15 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Label from '../components/Label';
-// import { toast } from 'react-toastify';
-// import { useApi } from '../helper/useApi.js';
-// import logo from '/logo.png';
+import { useAuthQuery } from '../redux/hooks/useAuthQuery';
 
 function Forgotpass() {
+    const { forgotPassMutation } = useAuthQuery();
     const [email, setEmail] = useState('');
-    const [isPending, setIspending] = useState(false);
-    const haldleForgotPass = async () => {
-        // try {
-        //     setIspending(true);
-        //     const response = await useApi("post", "/auth/forgot-password", { email });
-        //     console.log(response.data);
-        //     setEmail(" ");
-        // } catch (error) {
-        //     toast.error(error.response?.data.message);
-        // }
-        // setIspending(false);
+    // const [isPending, setIspending] = useState(false);
+    const haldleForgotPass = () => {
+        forgotPassMutation.mutate({ email })
+        setEmail('');
     }
     return (
         <div className='flex justify-center items-center min-h-screen bg-[#343434]'>
@@ -54,7 +46,7 @@ function Forgotpass() {
                                     type="submit"
                                     className="inline-flex items-center justify-center cursor-pointer gap-2 px-4 py-3 text-[15px] font-bold text-white transition-all bg-[#343434] hover:bg-[#343434df] border border-transparent rounded-md outline-none ">
                                     Reset Password
-                                    {isPending && <div className="w-7 h-7 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>}
+                                    {forgotPassMutation.isPending && <div className="w-7 h-7 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>}
                                 </button>
                                 <button
                                     className="inline-flex items-center cursor-pointer border-gray-200 justify-center gap-2 px-4 py-3 text-sm font-bold text-gray-700 transition-all border-2 bg-gray-200 hover:bg-gray-50 rounded-md">

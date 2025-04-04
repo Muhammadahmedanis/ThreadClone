@@ -2,7 +2,7 @@ import Input from "../components/Input";
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import logo from "/light-logo.svg"
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useActionState, useState } from "react";
 import Label from "../components/Label";
 import { FaRegEyeSlash } from "react-icons/fa6";
@@ -20,6 +20,7 @@ function Signin() {
   const handlePass = () => {
       setPassIcon(passIcon === "password" ? "text" : "password");
   };
+  const navigate = useNavigate();
 
   const[user, submitAction, isPending] = useActionState(async (previousState, formData) => {
       const email = formData.get("email");
@@ -44,8 +45,11 @@ function Signin() {
   
       const payload = { email, password};
       console.log(payload);
-      signinMutation.mutate(payload);
-      <Navigate to='/' />
+      signinMutation.mutate(payload, {
+        onSuccess: () => {
+          // navigate('/');
+        },
+      });
       return null;
     })
   
@@ -93,7 +97,7 @@ function Signin() {
               <Link to="/forgot" className="text-[#343434] text-sm hover:text-[#343434df] cursor-pointer">Forgot Password?</Link>
             </div>
             <button type="submit" className="w-full h-12 rounded-xl flex justify-center items-center bg-[#343434] hover:bg-[#343434df] cursor-pointer text-white" disabled={isPending}>
-              {isPending ? 
+              {signinMutation?.isPending ? 
                 ( <BiLoaderCircle className="size-7 animate-spin" /> ) : 
                 ( "Signin" ) 
               }

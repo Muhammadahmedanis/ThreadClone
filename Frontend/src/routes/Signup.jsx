@@ -2,23 +2,23 @@ import Input from "../components/Input";
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import logo from "/light-logo.svg"
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useActionState, useState } from "react";
 import Label from "../components/Label";
 import { FaRegEyeSlash } from "react-icons/fa6";
 import { IoEyeOutline } from "react-icons/io5";
 import { BiLoaderCircle } from "react-icons/bi";
 import toast from "react-hot-toast";
-// import { useDispatch } from "react-redux";
-// import { signupUser } from "../redux/slices/authSlice";
+import { useAuthQuery } from "../redux/hooks/useAuthQuery";
 
 function Signin() {
-  // const dispatch = useDispatch();
   const [passIcon, setPassIcon] = useState("password");
   const navigate = useNavigate();
   const handlePass = () => {
       setPassIcon(passIcon === "password" ? "text" : "password");
   };
+
+  const { signupMutation } = useAuthQuery()
 
   const[user, submitAction, isPending] = useActionState(async (previousState, formData) => {
     const userName = formData.get("userName");
@@ -49,9 +49,11 @@ function Signin() {
 
     const payload = { userName, email, password};
     console.log(payload);
-    // await dispatch(signupUser(payload));
-    navigate("/otp");
-    return null;
+    signupMutation.mutate(payload, {
+      onSuccess: () => {
+        navigate("/otp");
+      },
+    });
   })
 
   return (
@@ -101,7 +103,7 @@ function Signin() {
               <Link to="/forgot" className="text-[#343434] text-sm hover:text-[#343434df] cursor-pointer">Forgot Password?</Link>
             </div>
             <button type="submit" className="w-full h-12 flex justify-center items-center rounded-xl bg-[#343434] hover:bg-[#343434df] cursor-pointer text-white" disabled={isPending}>
-              {isPending ? 
+              { signupMutation.isPending ? 
                 ( <BiLoaderCircle className="size-7 animate-spin" /> ) : 
                 ( "Create Account" ) 
               }

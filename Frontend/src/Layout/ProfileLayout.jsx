@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react'
-import avatar from "/zuck-avatar.png"
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom'
 import { LuInstagram } from "react-icons/lu";
 import { CgMoreO } from "react-icons/cg";
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
-import { followUnfollowUser } from '../redux/slices/userSlice';
 import CreatePost from '../routes/CreatePost';
 import UpdateProfile from '../routes/UpdateProfile';
 import { openEditModel } from '../redux/slices/modelSlice';
 import { useUserQuery } from '../redux/hooks/useUserQuery';
+import { SlUserFollow } from "react-icons/sl";
+import { Helmet } from 'react-helmet-async';
 
 function ProfileLayout() {
     const [isOpen, setIsOpen] = useState(false);
@@ -27,8 +27,9 @@ function ProfileLayout() {
     
     useEffect(() => {
         if(myInfo?.data){
+            // const isFollowing = myInfo.data.followers?.some(follower => follower._id === loginUser);
             setFollowers(myInfo?.data?.followers || []);
-            setFollowing(myInfo.data.followers?.includes(loginUser));
+            setFollowing(myInfo.data.followers?.some(follower => follower._id === loginUser));
         }
     }, [myInfo, loginUser])
 
@@ -41,6 +42,8 @@ function ProfileLayout() {
     };
 
     const handleFollow = async () => {
+        console.log(myInfo?.data?._id);
+        // return
         followUserMutation.mutate(myInfo?.data?._id);
         setFollowers((prevFollowers) => {
             if (following) {
@@ -53,6 +56,14 @@ function ProfileLayout() {
     };
 
   return (
+    <>
+    <Helmet>
+        <title>
+            {
+                myInfo?.data ? myInfo?.data?.userName + ' | Thread' : 'Thread'
+            }
+        </title>
+    </Helmet>
     <div className='px-5 pt-10 max-w-2xl mx-auto'>
         <div className='flex justify-between w-full'>
             <div>
@@ -69,12 +80,11 @@ function ProfileLayout() {
         <p className='dark:text-[#616161] text-[#1e1e1e]'>{myInfo?.data?.bio}</p>
 
         <div className='flex justify-between'>
-            <div className='flex gap-8 items-center'>
-                <div className='flex relative'>
-                    <img className='rounded-full h-8 w-8' src='/zuck-avatar.png' alt="" />
-                    <img className='rounded-full h-8 w-8 absolute -right-5' src='/zuck-avatar.png' alt="" />
+            <div className='flex gap-1 items-center'>
+                <div className=''>
+                    <SlUserFollow size={22} className='font-semibold' />
                 </div>
-                <p>{myInfo?.data?.followers?.length} followers</p>
+                <p>{myInfo?.data?.followers?.length} {myInfo?.data?.followers?.length == 1 ? "follower" : "followers"}</p>
             </div>
             <div className='flex gap-2 items-center'>
                 <LuInstagram size={38} className='hover:rounded-full hover:ease-in-out hover:bg-gray-100 p-1.5' />
@@ -83,7 +93,7 @@ function ProfileLayout() {
                 size={38}
                 className="hover:rounded-full hover:ease-in-out hover:bg-gray-100 p-1.5 text-gray-700 dark:text-gray-200 cursor-pointer"
                 onClick={() => setIsOpen(!isOpen)}
-            />
+                />
 
             {isOpen && (
                 <div
@@ -102,8 +112,8 @@ function ProfileLayout() {
         <div className='pt-2'>
             {myInfo?.data?.userName === JSON.parse(localStorage.getItem("user"))?.userName ? (
                 <button 
-                    onClick={() => dispatch(openEditModel(true))}
-                    className="cursor-pointer rounded-lg w-full text-center my-2 px-5 py-2.5 text-[15px] font-bold border border-gray-300">
+                onClick={() => dispatch(openEditModel(true))}
+                className="cursor-pointer rounded-lg w-full text-center my-2 px-5 py-2.5 text-[15px] font-bold border border-gray-300">
                     Edit Profile
                 </button>
             ) : (
@@ -120,7 +130,7 @@ function ProfileLayout() {
                 const isActive = location.pathname.includes(tab); 
                 return (
                     <div 
-                        key={tab}
+                    key={tab}
                         className={`flex-1 pb-1 cursor-pointer border-b-[3px] ${
                             isActive ? "border-gray-600 text-black font-bold" : "border-gray-300 text-gray-400"
                         }`}
@@ -134,9 +144,10 @@ function ProfileLayout() {
         </div>
     
     <CreatePost />
-    <UpdateProfile />
+    <UpdateProfile data={myInfo?.data} />
     <Outlet context={myInfo?.data} />
     </div>
+    </>
   )
 }
 

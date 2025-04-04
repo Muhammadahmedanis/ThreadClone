@@ -115,37 +115,43 @@ export const getAllPost = asyncHandler(async (req, res) => {
 // *
 export const deletePost = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    if (!userId) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, UNAUTHORIZED);
-    }
+    if (!userId) throw new ApiError(StatusCodes.UNAUTHORIZED, UNAUTHORIZED);
 
     const { postId } = req.params;
-    if (!postId) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, EMPTY_URL_PARAMS);
-    }
+    if (!postId) throw new ApiError(StatusCodes.BAD_REQUEST, EMPTY_URL_PARAMS);
 
     const post = await Post.findById(postId);
-    if (!post) {
-        throw new ApiError(StatusCodes.NOT_FOUND, NO_DATA_FOUND);
-    }
+    if (!post) throw new ApiError(StatusCodes.NOT_FOUND, NO_DATA_FOUND);
 
     if (post.postedBy.toString() !== userId.toString()) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, UNAUTHORIZED);
     }
 
-    if (post.img) { 
-        const publicId = post.img.split("/").pop().split(".")[0]; 
-        await cloudinary.uploader.destroy(publicId);
+    if (post.img) {
+        try {
+            const urlParts = post.img.split('/');
+            const publicId = urlParts.slice(-2).join('/').split('.')[0]; // Correctly extract the public ID
+            const cloudinaryResponse = await cloudinary.uploader.destroy(publicId);
+            // console.log("Cloudinary Response:", cloudinaryResponse);
+
+            if (cloudinaryResponse.result !== 'ok') {
+                throw new Error(`Failed to delete image from Cloudinary: ${cloudinaryResponse.result}`);
+            }
+        } catch (error) {
+            console.error("Cloudinary deletion failed:", error.message);
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Image deletion failed");
+        }
     }
 
-    await Comment.deleteMany({ post: postId });
+    await Promise.all([
+        Comment.deleteMany({ post: postId }),
+        User.updateMany(
+            { $or: [{ threads: postId }, { reposts: postId }, { replies: postId }] },
+            { $pull: { threads: postId, reposts: postId, replies: postId } }
+        ),
+        Post.findByIdAndDelete(postId)
+    ]);
 
-    await User.updateMany(
-        { $or: [{ threads: postId }, { reposts: postId }, { replies: postId }] },
-        { $pull: { threads: postId, reposts: postId, replies: postId } }
-    );
-
-    await Post.findByIdAndDelete(postId);
     return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, DELETED_SUCCESS_MESSAGES));
 });
 
@@ -267,4 +273,19 @@ export const getFeed = asyncHandler(async (req, res) => {
     }
     const feedPosts = await Post.find({ postedBy: { $in: following } }).sort({ createdAt: -1 }).lean();
     return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK, feedPosts));
+})
+
+
+
+export const getTopLikePost = asyncHandler(async (_, res) => {
+    const Current24Hour = new Date();
+    Current24Hour.setDate(Current24Hour.getDate() -1);
+    const topLikedPosts = await Post.find({
+        createdAt: { $gte: Current24Hour }
+    })
+    .sort({  "likes.length": -1})
+    .limit(5)
+    .populate("postedBy", "userName profilePic")
+    .lean()
+    return res.status(StatusCodes.OK).send(new ApiResponse(StatusCodes.OK,'', topLikedPosts));
 })

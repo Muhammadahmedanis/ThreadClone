@@ -1,13 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+    import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast";
 import { myDetail, userDetail, searchUser, followUser } from '../services/userService.js';
 
-export const useUserQuery = (id = null, userName = null, query = null) => {
+export const useUserQuery = (userName = null, query = null) => {
     const queryClient = useQueryClient();
     const { data: myInfo } = useQuery({
-        queryKey: ["myInfo", id],
-        queryFn: () => myDetail(id),
-        enabled: !!id,
+        queryKey: ["myInfo"],
+        queryFn: myDetail,
+        enabled: !!JSON.parse(sessionStorage.getItem("user")),
         staleTime: 10000, 
         refetchOnWindowFocus: false,
         onSuccess: (data) => console.log("User info fetched:", data),

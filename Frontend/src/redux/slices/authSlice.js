@@ -79,6 +79,8 @@ export const updateUserProfile = createAsyncThunk("user/updateProfile", async (u
     }
 });
 
+
+
 // Auth Slice
 const authSlice = createSlice({
     name: "Auth",

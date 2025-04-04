@@ -5,6 +5,7 @@ export const createPost = (userData) => axiosInstance.post("/post/create", userD
 }).then(res => res.data);
 export const allPost = (page) => axiosInstance.get(`/post?page=${page}`).then(res => res.data);
 export const getAPost = (postId) => axiosInstance.get(`/post/${postId}`).then(res => res.data);
+export const topLikePost = () => axiosInstance.get('/post/trend').then(res => res.data);
 export const feedPost = () => axiosInstance.get('/post/feed').then(res => res.data);
 export const deletePost = (postId) => axiosInstance.delete(`/post/${postId}`).then(res => res.data);
 export const rePost = (userData, postId) => axiosInstance.put(`/post/repost/${postId}`, userData).then(res => res.data);

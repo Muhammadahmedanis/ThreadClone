@@ -3,26 +3,30 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { resendOtp, verifyOtp } from '../redux/slices/authSlice';
 import { BiLoaderCircle } from 'react-icons/bi';
+import { useAuthQuery } from '../redux/hooks/useAuthQuery';
 
 export const getData = (data) => {
   console.log(data);
   return data;
 };
- 
+
+
 const Otp = () => {
+  const { verifyOtpMutation, resendOtpMutation } = useAuthQuery();
   const navigate = useNavigate()
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user);
+  // const user = useSelector((state) => state.auth.user);
+  const user = JSON.parse(localStorage.getItem("user"))
   const [otpNum, setOtpNum] = useState(["", "", "", "", "", ""]);
   const[disable, setDisable] = useState(false);
 
   const [_, submitAction, isPending] = useActionState(async (previousState, formData) => {
     const otp = otpNum.join('');
-    await dispatch(verifyOtp(otp)).then((result) => {
-      if (result.payload) {
+    verifyOtpMutation.mutate(otp, {
+      onSuccess: () => {
         setOtpNum(["", "", "", "", "", ""]);
         navigate("/");
-      }
+      },
     });
   });
 
@@ -39,12 +43,11 @@ const Otp = () => {
     index == 5 && setDisable(true)
 };
 
-const handleNewOtp = async() => {
+const handleNewOtp = () => {
   if (user) {
-    await dispatch(resendOtp({ email: user.email, _id: user._id }));
-  } else {
-    console.log("User data not available");
-  }
+    resendOtpMutation.mutate({ email: user.email, _id: user.id })
+  } 
+  
 };
 
 const handleKeyDown = (e, index) => {
@@ -91,13 +94,13 @@ const handleKeyDown = (e, index) => {
             disabled={isPending}  
             className={`w-full inline-flex gap-2 items-center cursor-pointer justify-center whitespace-nowrap rounded-lg ${!disable ? 'bg-gray-300 hover:bg-gray-300 cursor-not-allowed' : 'bg-[#343434] hover:bg-[#343434df]'} px-3.5 py-2.5 text-sm font-medium text-white shadow-sm shadow-indigo-950/10 focus:outline-none focus:ring focus:ring-indigo-300 focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150`}>
                 <div className='text-[17px]'> Verify Otp</div>
-                { isPending && <BiLoaderCircle className="size-7 animate-spin" /> } 
+                { verifyOtpMutation.isPending && <BiLoaderCircle className="size-7 animate-spin" /> } 
           </button>
         </div>
       </form>
       <div className="text-sm text-slate-500 mt-4">
         Didn't receive code?{' '}
-        <button onClick={handleNewOtp} className="font-medium text-[#343434] hover:text-[#343434df]"> Resend </button>
+        <button onClick={handleNewOtp} className="font-medium cursor-pointer text-[#343434] hover:text-[#343434df]"> Resend </button>
       </div>
     </div>
     </div>

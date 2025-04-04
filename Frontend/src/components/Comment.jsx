@@ -5,17 +5,21 @@ import pic from "/zuck-avatar.png";
 import Action from './Action';
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { usePostQuery } from '../redux/hooks/usePostQuery';
+import { useOutletContext } from 'react-router-dom';
 
 function Comment({postId, comment, userName, createdAt, id, commentId, img=''}) {
-    const userId = JSON.parse(localStorage.getItem("user")).id;
-    const[like, setLike] = useState(false);
-    const { deleteCommentMutation } = usePostQuery();
-    const handleDelComment = () => {
-      if(comment){
-        // console.log({postId, commentId});
-        deleteCommentMutation.mutate({postId, commentId});
-      }
+  // const me = useOutletContext();
+  // console.log(me?._id);
+  const userId = JSON.parse(sessionStorage.getItem("user")).id;
+  // console.log(userId);
+  
+  const[like, setLike] = useState(false);
+  const { deleteCommentMutation } = usePostQuery();
+  const handleDelComment = () => {
+    if(comment){
+      deleteCommentMutation.mutate({postId, commentId});
     }
+  }
   return (
     <>
       <div className='flex gap-3 w-full my-2'>

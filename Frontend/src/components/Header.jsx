@@ -1,25 +1,29 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { RiLogoutCircleRLine } from "react-icons/ri";
-import { Link, NavLink } from "react-router-dom";
-import { MdOutlineDashboard, MdPublishedWithChanges } from "react-icons/md";
-import { FaBars, FaRegUser, FaRegEdit } from "react-icons/fa";
+import { Link } from "react-router-dom";
+// import { MdOutlineDashboard, MdPublishedWithChanges } from "react-icons/md";
+// import { FaBars, FaRegUser, FaRegEdit } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
 import logo from "/dark-logo.svg"
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../redux/slices/authSlice";
+// import { logoutUser } from "../redux/slices/authSlice";
 import Navbar from "./Navbar";
 import { SiSimplelogin } from "react-icons/si";
 import { theme } from "../redux/slices/modelSlice";
+import { useAuthQuery } from "../redux/hooks/useAuthQuery";
 
 function Header() {
   const dispatch = useDispatch();
-  const [userInfo, setUserInfo] = useState({});
+  // const [userInfo, setUserInfo] = useState({});
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useSelector((state) => state.auth);
+  // const { user } = useSelector((state) => state.auth);
   const themeMode = useSelector(state => state.model.themeMode);
+  // const navigate = useNavigate();
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const { logoutMutation } = useAuthQuery();
 
   const handleLogout = async () => {
-    dispatch(logoutUser());
+    logoutMutation.mutate();
     setIsOpen(false);
   };
 
@@ -47,7 +51,7 @@ function Header() {
                 className="absolute -right-1 mt-2 z-20 w-36 bg-white shadow-lg rounded-lg border border-gray-200 transition-all"
               >
                 <ul className="py-2">
-                  {["Copy Link"].map((item, index) => (
+                  {/* {["Copy Link"].map((item, index) => (
                     <li
                       key={index}
                       className="px-4 py-3 cursor-pointer text-gray-700 font-semibold hover:bg-gray-100 rounded transition"
@@ -55,7 +59,7 @@ function Header() {
                     >
                       {item}
                     </li>
-                  ))}
+                  ))} */}
                   <li>
                    {
                       user?.userName ? 

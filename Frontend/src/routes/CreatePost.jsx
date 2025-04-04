@@ -1,37 +1,42 @@
-import React, { useActionState, useState } from "react";
+import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { FaImages } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { BiLoaderCircle } from "react-icons/bi";
-import usePreviewImage from "../hooks/usePreviewImage";
 import { openPostModel } from "../redux/slices/modelSlice";
 import { usePostQuery } from "../redux/hooks/usePostQuery";
 import { useUserQuery } from "../redux/hooks/useUserQuery";
+import usePreviewImage from "../hooks/usePreviewImage";
 
 function CreatePost() {
-  const userId = JSON.parse(localStorage.getItem("user")).id;
   const { myInfo } = useUserQuery();
-  
   const dispatch = useDispatch();
   const { createPostMutation } = usePostQuery();
-  const isOpen = useSelector(state => state.model.postModel);
-  const { handleImageChange, imgUrl, setImageUrl } = usePreviewImage()
-  const[_, submitAction, isPending] = useActionState(async (previousState, formData) => {
-    const text = formData.get("text");
-    const payload = {
-      text,
-      img: imgUrl,
-    };
-    console.log(payload);
-    return
-    createPostMutation.mutate(payload, {
+  const isOpen = useSelector((state) => state.model.postModel);
+
+  const [text, setText] = useState("");
+  const { imgUrl, handleImageChange, setImageUrl } = usePreviewImage();
+
+  const submitAction = (e) => {
+    e.preventDefault();
+
+    if (!imgUrl) {
+      console.log("No image selected!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("text", text);
+    formData.append("img", imgUrl);
+
+    createPostMutation.mutate(formData, {
       onSuccess: () => {
         dispatch(openPostModel(false));
-        setImageUrl('');
+        setText("");
+        setImageUrl(null);
       },
     });
-  })
-  
+  };
+
   return (
     <>
       {isOpen && (
@@ -47,17 +52,18 @@ function CreatePost() {
 
             {/* Modal Body */}
             <div className="mt-4">
-              <form action={submitAction} className="space-y-2">
+              <form onSubmit={submitAction} className="space-y-4">
                 <div className="flex gap-4 items-center pb-3">
                   <img
-                   src={'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTr3jhpAFYpzxx39DRuXIYxNPXc0zI5F6IiMQ&s' || myInfo?.data?.profilePic}
+                    src={myInfo?.data?.profilePic || 'https://placehold.co/40x40'}
                     alt="Profile"
-                    className="h-12 w-12 rounded-full p-1 border border-gray-300"
+                    className="h-11 w-12 rounded-full border border-gray-300"
                   />
                   <div className="w-full">
                     <p className="text-sm font-medium py-2">{myInfo?.data?.userName}</p>
-                    <textarea 
-                      name="text"
+                    <textarea
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
                       placeholder="Start a thread..."
                       className="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       rows={3}
@@ -66,33 +72,26 @@ function CreatePost() {
                 </div>
 
                 {/* Image Upload */}
-                <div className="flex flex-col items-center">
-                  {imgUrl ? (
+                <div>
+                  <label htmlFor="file" className="cursor-pointer">
                     <img
-                      src={URL.createObjectURL(imgUrl)}
-                      className="w-full h-40 object-cover rounded-lg border border-gray-300"
+                      className="w-full h-40 rounded-lg border border-gray-300 object-cover"
+                      src={imgUrl ? URL.createObjectURL(imgUrl) : "https://placehold.co/400x200?text=Upload+Image"}
                       alt="Preview"
                     />
-                  ) : (
-                    <div className="w-full h-40 flex flex-col items-center justify-center border border-gray-300 rounded-lg cursor-pointer">
-                      <FaImages size={40} className="text-gray-400" />
-                      <p className="text-gray-500">Upload an image</p>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    id="file"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                  <label htmlFor="file" className="mt-2 cursor-pointer text-blue-600 hover:underline">
-                    {imgUrl ? "Change Image" : "Choose an Image"}
                   </label>
+                  <input type="file" id="file" hidden onChange={handleImageChange} />
                 </div>
 
-                {/* Submit Button */}
-                <button type="submit" className="w-full bg-blue-700 flex cursor-pointer justify-center text-white font-medium rounded-lg px-5 py-2.5 hover:bg-blue-800">
-                 { createPostMutation?.isPending ? ( <BiLoaderCircle className="size-7 animate-spin" /> ) : "Post Thread"}
+                <button
+                  type="submit"
+                  className="w-full bg-blue-700 flex justify-center items-center text-white font-medium rounded-lg px-5 py-2.5 hover:bg-blue-800"
+                >
+                  {createPostMutation.isPending ? (
+                    <BiLoaderCircle className="size-7 animate-spin" />
+                  ) : (
+                    "Post Thread"
+                  )}
                 </button>
               </form>
             </div>

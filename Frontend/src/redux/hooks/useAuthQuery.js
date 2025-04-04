@@ -1,18 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-import { signupUser, signinUser, logoutUser, verifyOtp, resendOtp, updateUserProfile } from "../services/authService";
+import { signupUser, signinUser, logoutUser, verifyOtp, resendOtp, forgotPass, updateUserProfile } from "../services/authService";
 
 export const useAuthQuery = () => {
   const queryClient = useQueryClient();
-
+  
   const signupMutation = useMutation({
+    queryKey: ["user"],
     mutationFn: signupUser, // ✅ Fix: Wrapped inside mutationFn
     onSuccess: (data) => {
       toast.success(data.message);
       if (data?.data) {
-        localStorage.setItem("user", JSON.stringify({
+        sessionStorage.setItem("user", JSON.stringify({
           userName: data.data.userName,
-          role: data.data.role,
           id: data.data._id
         }));
       }
@@ -25,13 +25,13 @@ export const useAuthQuery = () => {
     onSuccess: (data) => {
       toast.success(data.message);
       if (data?.data) {
-        localStorage.setItem("user", JSON.stringify({
+        sessionStorage.setItem("user", JSON.stringify({
           userName: data.data.userName,
-          role: data.data.role,
           id: data.data._id
         }));
       }
       queryClient.invalidateQueries(["user"]); // Ensure user data refresh
+      
     },
     onError: (error) => toast.error(error.response?.data?.message || "Signin failed"),
   });
@@ -40,9 +40,15 @@ export const useAuthQuery = () => {
     mutationFn: logoutUser, // ✅ Fix
     onSuccess: () => {
       toast.success("Logged out successfully");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("user");
       queryClient.invalidateQueries(["user"]);
     },
+  });
+
+  const forgotPassMutation = useMutation({
+    mutationFn: forgotPass, // ✅ Fix
+    onSuccess: (data) => toast.success(data.message),
+    onError: (error) => toast.error(error.response?.data?.message || "forgot password failed"),
   });
 
   const verifyOtpMutation = useMutation({
@@ -73,5 +79,5 @@ export const useAuthQuery = () => {
     onError: (error) => toast.error(error.response?.data?.message || "Profile update failed"),
   });
 
-  return { signupMutation, signinMutation, logoutMutation, verifyOtpMutation, resendOtpMutation, updateProfileMutation };
+  return { signupMutation, signinMutation, logoutMutation, verifyOtpMutation, resendOtpMutation, forgotPassMutation, updateProfileMutation };
 };
